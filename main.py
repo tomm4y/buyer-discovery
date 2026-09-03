@@ -1,7 +1,9 @@
 import os
+import googlemaps
 from anthropic import Anthropic
 import requests
 from dotenv import load_dotenv
+
 
 load_dotenv()
 
@@ -22,4 +24,4 @@ client = Anthropic()
 
 url = "https://api.github.com"
 resp = requests.get(url)
-print({resp.status_code})
+print(f"{resp.status_code} {resp.reason}")
