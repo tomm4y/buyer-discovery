@@ -1,12 +1,12 @@
-```bash
-# Mac / Linux
+# 1. Clone repo
+git clone <repo-url>
+cd <repo-name>
+
+# 2. Create environment
+python3 -m venv venv
+
+# 3. Activate
 source venv/bin/activate
 
-# Windows (CMD)
-venv\Scripts\activate.bat
-
-# Windows (PowerShell)
-venv\Scripts\Activate.ps1
-```
-
-pip install python-dotenv requests googlemaps anthropic
+# 4. Install dependencies 
+pip install -r requirements.txt
