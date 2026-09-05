@@ -17,9 +17,7 @@ hunter_key = os.getenv("HUNTER_API_KEY")
 gmaps = googlemaps.Client(key=maps_key)
 
 # weighted scoring model using logarithmic review scaling to dynamically rank and extract the top 25% highest-quality business leads.
-# returns list of top 25% of businesses 
-import math
-
+# returns list of dictionary of top 25% of businesses 
 def filter_top_25(businesses: list[dict]) -> list[dict]:
 
     def scoring(biz: dict):
@@ -61,9 +59,10 @@ def discover(zipcode: str, business_type: str) -> list[dict]:
                 continue
             businesses.append({
                 "name": place.get("name"),
+                "place_id": place.get("place_id"),
                 "rating": place.get("rating", 0),
                 "review_count": place.get("user_ratings_total", 0),
-                "map_url": f"https://www.google.com/maps/place/?q=place_id:{place.get('place_id')}",
+                # "map_url": f"https://www.google.com/maps/place/?q=place_id:{place.get('place_id')}",
             })
         # Check if a next page exists
         next_page_token = results.get("next_page_token")
@@ -81,26 +80,11 @@ def discover(zipcode: str, business_type: str) -> list[dict]:
 
 if __name__ == "__main__":
       potential = discover("75080", "law firm")
-      top_businesses = filter_top_25(potential)
+      top_businesses = filter_top_25(potential) # this is list dict
 
       for b in top_businesses:
         print(
             f"Name: {b['name']} | Rating: {b['rating']:.1f} | Reviews: {b['review_count']}"
         )
-        print(f"{b['map_url']}")
+        print(f"https://www.google.com/maps/place/?q=place_id:{b['place_id']}")
         print("-" * 40)
-
-
-# print(json.dumps(result, indent=3))
-
-# client = Anthropic()
-# response = client.messages.create(
-#     model="claude-sonnet-5",
-#     max_tokens=100,
-#     messages=[{
-#         "role": "user",
-#         "content": "respond with only 'hi3'"
-#     }]
-# )
-
-# print(response.content[0].text)
