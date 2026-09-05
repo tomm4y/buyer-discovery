@@ -2,4 +2,7 @@
 .env.example
 __pycache__/
 *.pyc
-/data/
+/data/*
+!/data/.gitkeep
+/clean_data/*
+!/clean_data/.gitkeep
