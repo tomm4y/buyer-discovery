@@ -3,6 +3,15 @@ import json
 import os
 import re
 
+
+def save_reviews(reviews: list[str], batch_name: str, output_dir: str = "data") -> str:
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, f"{batch_name}.json")
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(reviews, f, indent=2, ensure_ascii=False)
+    return output_path
+
+
 def scrape_lowest_reviews(
 	page: Page, place_id: str, min_text_len: int = 20
 ) -> list[str]:
@@ -105,7 +114,7 @@ def scrape_lowest_reviews(
 
         status = "kept"
         if len(review_text) < min_text_len:
-            status = "skipped (text too short)"
+            status = "skip text too short"
         else:
             extracted_reviews.append(review_text)
 
@@ -118,23 +127,9 @@ def scrape_lowest_reviews(
 if __name__ == "__main__":
 
     place_ids = [
-    "ChIJNW-EOx-ZToYR0Crz6bac4EI",
-    "ChIJQfLUSgufToYRZIAt4sapAuk",
-    "ChIJZ9phbj-fToYR4gwCSmlISg4",
-    "ChIJuzINMREeTIYR5_8rdpjsVwo",
-    "ChIJ0zzq1_EfTIYRgryTKWGtL-8",
-    "ChIJOddkDJKgToYRqiDzJgy3Z14",
-    "ChIJHWblb2m35BQRur_FGD_A11I",
-    "ChIJQzSYfXEfTIYR76i9d10T4Og",
-    "ChIJtRnoJjkgTIYRSkJDlySZ4ug",
-    "ChIJg74i3fEgTIYRKYgyZLz5iR4",
-    "ChIJrYB12XkhTIYRMUJy3EG6tTE",
-    "ChIJHSChQPIfTIYRNL4kbudryNE",
-    "ChIJBzby7hGZToYR57ZYzpGAVLM",
-    "ChIJXwcSL9snTIYR47qppd4Rb2E",
-    "ChIJu-ibN-ggTIYRzjdBjsZXpZM",
+        "ChIJu-ibN-ggTIYRzjdBjsZXpZM"
     ]
-    
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True, channel="chrome")
 
@@ -147,8 +142,18 @@ if __name__ == "__main__":
         )
         page = context.new_page()
 
-        # Test 
-        print(scrape_lowest_reviews(page, place_ids[14]))
+        ### testing #####  ### testing #####  ### testing #####
+        all_reviews = []
+        for place_id in place_ids:
+            reviews = scrape_lowest_reviews(page, place_id)
+            all_reviews.extend(reviews)
+
+        zipcode = "75080"
+        business_type = "law firm"
+
+        batch_name = f"{zipcode}_{business_type}".replace(" ", "_")
+        save_reviews(all_reviews, batch_name)
+        ### testing #####  ### testing #####  ### testing #####
 
         context.close()
         browser.close()
