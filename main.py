@@ -4,41 +4,18 @@ import googlemaps
 from anthropic import Anthropic
 import requests
 from dotenv import load_dotenv
-import json
 import time
-from playwright.sync_api import sync_playwright
-
-from scraper import scrape_lowest_reviews, save_reviews
+from scraper import Scraper
+from clean_reviews import clean_reviews
 
 load_dotenv()
 
 # import api keys
 maps_key = os.getenv("GOOGLE_API_KEY")
 claude_key = os.getenv("ANTHROPIC_API_KEY")
-hunter_key = os.getenv("HUNTER_API_KEY")
+pinecone_key = os.getenv("PINECONE_API_KEY")
 
 gmaps = googlemaps.Client(key=maps_key)
-
-# weighted scoring model using logarithmic review scaling to dynamically rank and extract the top 25% highest-quality business leads.
-# returns list of dictionary of top 25% of businesses 
-def filter_top_25(businesses: list[dict]) -> list[dict]:
-
-    def scoring(biz: dict):
-        rating = biz.get('rating', 0)
-        reviews = biz.get('review_count', 0)
-
-        review_weight = math.log10(reviews + 1)
-
-        if rating >= 3.5:
-            return rating * (1 + review_weight)
-        else:
-            return rating / (1 + review_weight)
-         
-    sorted_businesses = sorted(businesses, key=scoring, reverse=True)
-
-    cutoff_count = math.ceil(len(sorted_businesses) * 0.25)
-    return sorted_businesses[:cutoff_count]
-
 
 def discover(zipcode: str, business_type: str) -> list[dict]:
     # using geocode to translate zip code to lat and lng
@@ -81,40 +58,58 @@ def discover(zipcode: str, business_type: str) -> list[dict]:
     print(f"{len(businesses)} businesses found")
     return businesses
 
+# weighted scoring model using logarithmic review scaling to dynamically rank and extract the top 25% highest-quality business leads.
+# returns list of dictionary of top 25% of businesses 
+def filter_top_25(businesses: list[dict]) -> list[dict]:
+
+    def scoring(biz: dict):
+        rating = biz.get('rating', 0)
+        reviews = biz.get('review_count', 0)
+
+        review_weight = math.log10(reviews + 1)
+
+        if rating >= 3.5:
+            return rating * (1 + review_weight)
+        else:
+            return rating / (1 + review_weight)
+         
+    sorted_businesses = sorted(businesses, key=scoring, reverse=True)
+
+    cutoff_count = math.ceil(len(sorted_businesses) * 0.25)
+    return sorted_businesses[:cutoff_count]
+
+
+# testing 
 if __name__ == "__main__":
-      zipcode = "75080"
-      business_type = "law firm"
+    
+    zipcode = "75080"
+    business_type = "law firm"
 
-      potential = discover(zipcode, business_type)
-      top_businesses = filter_top_25(potential) # this is list dict
+    potential = discover(zipcode, business_type)
+    top_businesses = filter_top_25(potential) # this is list dict
 
-      # for running headless browser
-      with sync_playwright() as p:
-          browser = p.chromium.launch(headless=True, channel="chrome")
-          context = browser.new_context(
-              user_agent=(
-                  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                  "AppleWebKit/537.36 (KHTML, like Gecko) "
-                  "Chrome/128.0.0.0 Safari/537.36"
-              )
-          )
 
-          all_reviews = []
-          page = context.new_page()
+    scraper = Scraper(headless=True)
+    all_reviews = []
+    # for b in top_businesses:
+    #     print(
+    #         f"Name: {b['name']} | Rating: {b['rating']:.1f} | Reviews: {b['review_count']}"
+    #     )
+    #     print(f"https://www.google.com/maps/place/?q=place_id:{b['place_id']}")
+    #     print("-" * 40)
 
-          for b in top_businesses:
-              print(
-                  f"Name: {b['name']} | Rating: {b['rating']:.1f} | Reviews: {b['review_count']}"
-              )
-              print(f"https://www.google.com/maps/place/?q=place_id:{b['place_id']}")
-              print("-" * 40)
+    # for b in top_businesses:
+    #     reviews = scraper.scrape_lowest_reviews(b['place_id'])
+    #     all_reviews.extend(reviews)
+    
+    reviews = scraper.scrape_lowest_reviews('ChIJ04BEo86eToYRqwz0Zes0tuk') # temp
+    all_reviews.extend(reviews) # temp
 
-          for b in top_businesses:
-              reviews = scrape_lowest_reviews(page, b['place_id'])
-              all_reviews.extend(reviews)
-
-          context.close()
-          browser.close()
-
-      batch_name = f"{zipcode}_{business_type}".replace(" ", "_")
-      save_reviews(all_reviews, batch_name)
+    scraper.close()
+    batch_name = f"{zipcode}_{business_type}".replace(" ", "_")
+    
+    saved = scraper.save_reviews(all_reviews, batch_name, 'data')
+    print("Saved reviews to: " + saved)
+    
+    output_file = clean_reviews(saved, "cleaned_data")
+    print(f"Cleaned reviews saved to: {output_file}")
