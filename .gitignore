@@ -4,5 +4,5 @@ __pycache__/
 *.pyc
 /data/*
 !/data/.gitkeep
-/clean_data/*
+/cleaned_data/*
 !/cleaned_data/.gitkeep
