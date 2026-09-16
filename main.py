@@ -9,7 +9,6 @@ load_dotenv()
 
 # import api keys
 claude_key = os.getenv("ANTHROPIC_API_KEY")
-pinecone_key = os.getenv("PINECONE_API_KEY")
 
 # testing 
 if __name__ == "__main__":
@@ -33,14 +32,15 @@ if __name__ == "__main__":
     #     reviews = scraper.scrape_lowest_reviews(b['place_id'])
     #     all_reviews.extend(reviews)
     
+    # ChIJ04BEo86eToYRqwz0Zes0tuk long reviews
+    # ChIJu-ibN-ggTIYRzjdBjsZXpZM short reviews
+    
     reviews = scraper.scrape_lowest_reviews('ChIJ04BEo86eToYRqwz0Zes0tuk') # temp
     all_reviews.extend(reviews) # temp
     scraper.close()
     
     batch_name = f"{zipcode}_{business_type}".replace(" ", "_")
     
-    saved = scraper.save_reviews(all_reviews, batch_name, 'data')
-    print("Saved reviews to: " + saved)
+    saved = clean_reviews(reviews, "cleaned_data", batch_name)
     
-    output_file = clean_reviews(saved, "cleaned_data")
-    print(f"Cleaned reviews saved to: {output_file}")
+    print("Saved reviews to: " + saved)

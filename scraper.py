@@ -1,17 +1,25 @@
 from playwright.sync_api import Page, sync_playwright
 import json, os, re
+from clean_reviews import clean_reviews
+
+AUTH_STATE_PATH = "google_auth/auth_state.json"
 
 class Scraper:
     def __init__(self, headless=True):
             self._playwright = sync_playwright().start()
             self.browser = self._playwright.chromium.launch(headless=headless, channel="chrome")
-            self.context = self.browser.new_context(
-                            user_agent=(
-                                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                                "Chrome/128.0.0.0 Safari/537.36"
-                            )
-                        )
+
+            context_kwargs = {
+                "user_agent": (
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/128.0.0.0 Safari/537.36"
+                )
+            }
+            if os.path.exists(AUTH_STATE_PATH):
+                context_kwargs["storage_state"] = AUTH_STATE_PATH
+
+            self.context = self.browser.new_context(**context_kwargs)
             self.page = self.context.new_page()
 
     def close(self):
@@ -138,9 +146,10 @@ class Scraper:
         return extracted_reviews
 
 if __name__ == "__main__":
-
+    # ChIJ04BEo86eToYRqwz0Zes0tuk long reviews
+    # ChIJu-ibN-ggTIYRzjdBjsZXpZM short reviews
     place_ids = [
-        "ChIJu-ibN-ggTIYRzjdBjsZXpZM"
+        "ChIJ04BEo86eToYRqwz0Zes0tuk"
     ]
 
     scraper = Scraper(headless=False)
@@ -154,7 +163,8 @@ if __name__ == "__main__":
     business_type = "law firm"
 
     batch_name = f"{zipcode}_{business_type}".replace(" ", "_")
-    saved = scraper.save_reviews(all_reviews, batch_name, "data")
+    
+    saved = clean_reviews(reviews, "cleaned_data", batch_name)
     print("Saved reviews to: " + saved)
     ### testing #####  ### testing #####  ### testing #####
 

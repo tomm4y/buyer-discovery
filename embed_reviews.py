@@ -13,3 +13,4 @@ pc = Pinecone(api_key=pinecone_key)
 
 index = pc.Index("reviews")
 
+def embed_texts()

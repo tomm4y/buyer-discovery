@@ -2,7 +2,6 @@
 .env.example
 __pycache__/
 *.pyc
-/data/*
-!/data/.gitkeep
 /cleaned_data/*
 !/cleaned_data/.gitkeep
+google_auth/auth_state.json

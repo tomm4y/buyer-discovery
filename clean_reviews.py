@@ -3,14 +3,10 @@ import emoji
 import re
 from pathlib import Path
 
-def clean_reviews(input_path: str, output_dir: str) -> str:
-
-    input_file = Path(input_path)
-    output_path = Path(output_dir) / input_file.name
-
-    with input_file.open("r", encoding="utf-8") as file:
-        reviews = json.load(file)
-
+def clean_reviews(reviews: list[dict], output_dir: str, batch_name: str) -> str:
+    
+    output_path = Path(output_dir) / f"{batch_name}.json"
+    
     cleaned_reviews = []
     for review in reviews:
         text = review["text"]
