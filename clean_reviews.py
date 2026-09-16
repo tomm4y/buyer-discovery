@@ -12,7 +12,8 @@ def clean_reviews(input_path: str, output_dir: str) -> str:
         reviews = json.load(file)
 
     cleaned_reviews = []
-    for text in reviews:
+    for review in reviews:
+        text = review["text"]
         text = emoji.replace_emoji(text, replace="")
 
         text = re.sub(r"[‘’]", "'", text)
@@ -25,7 +26,7 @@ def clean_reviews(input_path: str, output_dir: str) -> str:
         text = re.sub(r"\s+", " ", text)
         text = text.strip()
 
-        cleaned_reviews.append(text)
+        cleaned_reviews.append({"place_id": review["place_id"], "text": text})
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", encoding="utf-8") as file:

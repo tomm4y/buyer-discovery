@@ -19,7 +19,7 @@ class Scraper:
         self.context.close()
         self._playwright.stop()
         
-    def save_reviews(self, reviews: list[str], batch_name: str, output_dir: str) -> str:
+    def save_reviews(self, reviews: list[dict], batch_name: str, output_dir: str) -> str:
         os.makedirs(output_dir, exist_ok=True)
         output_path = os.path.join(output_dir, f"{batch_name}.json")
         with open(output_path, "w", encoding="utf-8") as f:
@@ -28,7 +28,7 @@ class Scraper:
 
     def scrape_lowest_reviews(
         self, place_id: str, min_text_len: int = 20
-    ) -> list[str]:
+    ) -> list[dict]:
 
         # open url
         url = f"https://www.google.com/maps/place/?q=place_id:{place_id}"
@@ -130,7 +130,7 @@ class Scraper:
             if len(review_text) < min_text_len:
                 status = "skip text too short"
             else:
-                extracted_reviews.append(review_text)
+                extracted_reviews.append({"place_id": place_id, "text": review_text})
 
             print(f"card {card_index}: rating = {rating}, chars={len(review_text)} -> {status}")
 
