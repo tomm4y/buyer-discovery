@@ -26,7 +26,7 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
     # for item in objects.data, -> item.embedding
     return [item.embedding for item in objects.data]
 
-def upsert_index(reviews: list[dict], embeddings: list[list[float]]):
+def upsert_index(reviews: list[dict], embeddings: list[list[float]], zipcode: str, business_type: str):
     vectors_to_upsert = []
     for i, (review, vector) in enumerate(zip(reviews, embeddings)):
         vectors_to_upsert.append({
@@ -34,8 +34,8 @@ def upsert_index(reviews: list[dict], embeddings: list[list[float]]):
             'values': vector,
             'metadata': {
                 'place_id': review['place_id'],
-                'zipcode': review['zipcode'],
-                'business_type': review['business_type'],
+                "zipcode": zipcode,
+                "business_type": business_type,
                 'text': review['text']
             }
         })
@@ -47,4 +47,4 @@ if __name__ == "__main__":
     reviews = load_json(path)
     texts = [review['text'] for review in reviews]
     embedded = embed_texts(texts)
-    upsert_index(reviews, embedded)
+    upsert_index(reviews, embedded, '75080', 'lawyer')
