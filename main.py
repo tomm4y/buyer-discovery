@@ -14,19 +14,20 @@ claude_key = os.getenv("ANTHROPIC_API_KEY")
 if __name__ == "__main__":
     
     zipcode = "75080"
-    business_type = "law firm"
+    business_type = "lawyer"
 
     potential = discover(zipcode, business_type)
     top_businesses = filter_top_25(potential) # this is list dict
 
     scraper = Scraper(headless=True)
     all_reviews = []
+    
     # for b in top_businesses:
-    #     print(
-    #         f"Name: {b['name']} | Rating: {b['rating']:.1f} | Reviews: {b['review_count']}"
-    #     )
-    #     print(f"https://www.google.com/maps/place/?q=place_id:{b['place_id']}")
-    #     print("-" * 40)
+    #     reviews = scraper.scrape_lowest_reviews(b['place_id'])
+    #     for r in reviews:
+    #         r["zipcode"] = zipcode
+    #         r["business_type"] = business_type
+    #     all_reviews.extend(reviews)
 
     # for b in top_businesses:
     #     reviews = scraper.scrape_lowest_reviews(b['place_id'])
@@ -35,12 +36,12 @@ if __name__ == "__main__":
     # ChIJ04BEo86eToYRqwz0Zes0tuk long reviews
     # ChIJu-ibN-ggTIYRzjdBjsZXpZM short reviews
     
-    reviews = scraper.scrape_lowest_reviews('ChIJ04BEo86eToYRqwz0Zes0tuk') # temp
+    reviews = scraper.scrape_lowest_reviews('ChIJu-ibN-ggTIYRzjdBjsZXpZM') # temp
     all_reviews.extend(reviews) # temp
     scraper.close()
     
     batch_name = f"{zipcode}_{business_type}".replace(" ", "_")
     
-    saved = clean_reviews(reviews, "cleaned_data", batch_name)
+    saved_file_path = clean_reviews(reviews, "cleaned_data", batch_name, zipcode, business_type)
     
-    print("Saved reviews to: " + saved)
+    print("Saved reviews to: " + saved_file_path)

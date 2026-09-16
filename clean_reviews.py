@@ -3,7 +3,7 @@ import emoji
 import re
 from pathlib import Path
 
-def clean_reviews(reviews: list[dict], output_dir: str, batch_name: str) -> str:
+def clean_reviews(reviews: list[dict], output_dir: str, batch_name: str, zipcode: str, business_type = str) -> str:
     
     output_path = Path(output_dir) / f"{batch_name}.json"
     
@@ -22,7 +22,12 @@ def clean_reviews(reviews: list[dict], output_dir: str, batch_name: str) -> str:
         text = re.sub(r"\s+", " ", text)
         text = text.strip()
 
-        cleaned_reviews.append({"place_id": review["place_id"], "text": text})
+        cleaned_reviews.append({
+            "place_id": review["place_id"],
+            "zipcode": zipcode,
+            "business_type": business_type,
+            "text": text
+        })
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", encoding="utf-8") as file:

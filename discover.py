@@ -9,7 +9,27 @@ load_dotenv()
 maps_key = os.getenv("GOOGLE_API_KEY")
 gmaps = googlemaps.Client(key=maps_key)
 
+# https://developers.google.com/maps/documentation/places/web-service/supported_types
+ALLOWED_BUSINESS_TYPES = [
+    "lawyer",
+    "accounting",
+    "real_estate_agency",
+    "insurance_agency",
+    "dentist",
+    "doctor",
+    "plumber",
+    "electrician",
+    "roofing_contractor",
+    "restaurant",
+]
+
 def discover(zipcode: str, business_type: str) -> list[dict]:
+    if business_type not in ALLOWED_BUSINESS_TYPES:
+        raise ValueError(
+            f"'{business_type}' is not a supported business type. "
+            f"Choose one of these: {ALLOWED_BUSINESS_TYPES}"
+        )
+
     # using geocode to translate zip code to lat and lng
     geocode_result = gmaps.geocode(zipcode)
     lat_lng = geocode_result[0]["geometry"]["location"]
@@ -17,8 +37,8 @@ def discover(zipcode: str, business_type: str) -> list[dict]:
 
     results = gmaps.places_nearby(
         location=lat_lng,
-        radius=10000, 
-        keyword=business_type
+        radius=10000,
+        type=business_type
     )
 
     businesses = []
@@ -34,7 +54,7 @@ def discover(zipcode: str, business_type: str) -> list[dict]:
                 "place_id": place.get("place_id"),
                 "rating": place.get("rating", 0),
                 "review_count": place.get("user_ratings_total", 0),
-                # "map_url": f"https://www.google.com/maps/place/?q=place_id:{place.get('place_id')}",
+                "types": place.get("types", []),
             })
         # Check if a next page exists
         next_page_token = results.get("next_page_token")
@@ -68,4 +88,5 @@ def filter_top_25(businesses: list[dict]) -> list[dict]:
     sorted_businesses = sorted(businesses, key=scoring, reverse=True)
 
     cutoff_count = math.ceil(len(sorted_businesses) * 0.25)
+    print('finished filtering for top 25')
     return sorted_businesses[:cutoff_count]

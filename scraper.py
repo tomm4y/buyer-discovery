@@ -149,10 +149,10 @@ if __name__ == "__main__":
     # ChIJ04BEo86eToYRqwz0Zes0tuk long reviews
     # ChIJu-ibN-ggTIYRzjdBjsZXpZM short reviews
     place_ids = [
-        "ChIJ04BEo86eToYRqwz0Zes0tuk"
+        "ChIJu-ibN-ggTIYRzjdBjsZXpZM"
     ]
 
-    scraper = Scraper(headless=False)
+    scraper = Scraper(headless=True)
     ### testing #####  ### testing #####  ### testing #####
     all_reviews = []
     for place_id in place_ids:
